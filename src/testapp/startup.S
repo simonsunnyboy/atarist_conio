@@ -1,5 +1,7 @@
 			.equ 	BASEPAGE_SIZE,0x100
 			.equ	STACK_SIZE,0x1000
+
+			.globl  ___main
 		
 			.text
 
@@ -27,7 +29,9 @@ start:
 exit:	
 			clr.w -(sp)
 			trap #1		
-		
+___main:
+			rts
+
 			.bss
 		
 _basepage:	ds.l	1

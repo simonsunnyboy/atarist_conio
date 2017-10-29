@@ -20,7 +20,7 @@ set(CMAKE_EXE_LINKER_FLAGS  "${SRC_DIR}/testapp/startup.S" )
 
 # GNU as configuration
 set(CMAKE_ASM_FLAGS_RELEASE "")
-set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -m68000 -I${SRC_DIR} -I${RES_DIR}")
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -m68000 -I${SRC_DIR}")
 
 # include directories
 include_directories(${SRC_DIR})
