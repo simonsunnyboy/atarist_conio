@@ -144,7 +144,6 @@
      */
     void chlinexy (uint8_t x, uint8_t y, uint8_t length);
 
-
     /**
      * @brief Output a vertical line with the given length at the current cursor position.
      */

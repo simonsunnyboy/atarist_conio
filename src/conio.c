@@ -30,6 +30,7 @@
 
 #define INIT_FLAG    BIT(0)  /**< is subsystem initalized? */
 #define CURSOR_SHOWN BIT(1)  /**< is the cursor active? */
+#define REVERSE_ON   BIT(2)  /**< reverse video is active? */
 
 /**
  * @brief structure for internal variables
@@ -41,6 +42,7 @@ typedef struct
     uint8_t y;  /**< cursor y position */
     uint8_t fg; /**< foreground text color */
     uint8_t bg; /**< background text color */
+    char hexstr[5];  /**< temporary buffer for decoding hexdigits */
 } conio_vars_t;
 
 
@@ -83,7 +85,7 @@ static void assert_init(void)
 /**
  * @brief returns length of given string in characters
  */
-int16_t StrLen(const char * string)
+static int16_t StrLen(const char * string)
 {
     int16_t n = 0;
 
@@ -95,6 +97,27 @@ int16_t StrLen(const char * string)
     return(n);
 }
 
+/**
+ * @brief decode number into hexadecimal representation
+ * @details The number is stored internall in Conio.hexstr
+ */
+static void decode_hex(uint16_t n)
+{
+    static const char hex_to_ascii[] = "0123456789ABCDEF";
+    uint8_t digits = 4;
+    Conio.hexstr[4] = '\0';
+
+    while(digits > 0)
+    {
+        /* decode nybble and advance for next run */
+        Conio.hexstr[digits - 1] = hex_to_ascii[(n & 0x000F)];
+        n = n >> 4;
+        /* keep track of position in string */
+        digits--;
+    }
+
+    return;
+}
 
 /* -----------------------------------------------------------------------
  * Public function implementation
@@ -270,7 +293,214 @@ char * cgets(void)
     return &buffer[0];
 }
 
+/**
+ * @brief   set cursor display state
+ * @details If onoff is 1, a cursor is displayed when waiting for keyboard input. If
+ *          onoff is 0, the cursor is hidden when waiting for keyboard input. The
+ *          function returns the old cursor setting.
+ */
+uint8_t cursor (uint8_t onoff)
+{
+    uint8_t old_st = 0;
 
+    /* cursor is on? */
+    if((Conio.flags & CURSOR_SHOWN) != 0)
+    {
+        old_st = 1;
+    }
+
+    if(onoff == 0)
+    {
+        Conio.flags &= ~CURSOR_SHOWN;
+    }
+    else
+    {
+        Conio.flags |= CURSOR_SHOWN;
+    }
+
+    return old_st;
+}
+
+/**
+ * @brief   Enable/disable reverse character display.
+ * @details Return the old setting.
+ */
+uint8_t revers (uint8_t onoff)
+{
+    uint8_t old_st = 0;
+
+    /* reverse is on? */
+    if((Conio.flags & REVERSE_ON) != 0)
+    {
+        old_st = 1;
+    }
+
+    if(onoff == 0)
+    {
+        Conio.flags &= ~REVERSE_ON;
+        Print(ESC "q");   /* reverse off */
+    }
+    else
+    {
+        Conio.flags |= REVERSE_ON;
+        Print(ESC "p");   /* reverse on */
+    }
+
+    return old_st;
+}
+
+/**
+ * @brief   Set the color for text output.
+ * @details The old color setting is returned.
+ */
+uint8_t textcolor (uint8_t color)
+{
+    uint8_t old_col = Conio.fg;
+    Conio.fg = (color & 0x0F);
+
+    Print( ESC "b");
+    Cconout(Conio.fg);
+
+    return old_col;
+}
+
+/**
+ * @brief   Set the color for text background output.
+ * @details The old color setting is returned.
+ */
+uint8_t bgcolor (uint8_t color)
+{
+    uint8_t old_col = Conio.bg;
+    Conio.bg = (color & 0x0F);
+
+    Print( ESC "c");
+    Cconout(Conio.bg);
+
+    return old_col;
+}
+
+/**
+ * @brief     Set the color for the border.
+ * @details   The old color setting is returned.
+ * @attention This is not implemented for Atari ST. The call is available for compatibility reasons. 0 is returned
+ */
+uint8_t bordercolor (uint8_t color)
+{
+    (void) color;
+    return 0;
+}
+
+/**
+ * @brief Output a horizontal line with the given length starting at the current cursor position.
+ */
+void chline (uint8_t length)
+{
+    while(length > 0)
+    {
+        cputc('-');
+        length--;
+    }
+    return;
+}
+
+/**
+ * @brief Same as "gotoxy (x, y); chline (length);"
+ * @see gotoxy
+ * @see chline
+ */
+void chlinexy (uint8_t x, uint8_t y, uint8_t length)
+{
+    gotoxy(x,y);
+    chline(length);
+    return;
+}
+
+/**
+ * @brief Output a vertical line with the given length at the current cursor position.
+ */
+void cvline (uint8_t length)
+{
+    uint8_t x = wherex();
+    uint8_t y = wherey();
+    while(length > 0)
+    {
+        gotoxy(x,y);
+        cputc('|');
+        y++;
+        length--;
+    }
+    return;
+}
+
+/**
+ * @brief Same as "gotoxy (x, y); cvline (length);"
+ * @see gotoxy
+ * @see cvline
+ */
+void cvlinexy (uint8_t x, uint8_t y, uint8_t length)
+{
+    gotoxy(x,y);
+    cvline(length);
+    return;
+}
+
+/**
+ * @brief Clear part of a line (write length spaces).
+ */
+void cclear (uint8_t length)
+{
+    while(length > 0)
+    {
+        cputc(' ');
+        length--;
+    }
+    return;
+}
+
+/**
+ * @brief Same as "gotoxy (x, y); cclear (length);"
+ * @see gotoxy
+ * @see cclear
+ */
+void cclearxy (uint8_t x, uint8_t y, uint8_t length)
+{
+    gotoxy(x,y);
+    cclear(length);
+    return;
+}
+
+/**
+ * @brief Return the current screen size.
+ */
+void screensize (uint8_t* x, uint8_t* y)
+{
+    /** @todo determine size from actual screen resolution */
+    *x = 80;
+    *y = 25;
+    return;
+}
+
+/**
+ * @brief    prints the hexadecimal value of the given value
+ * @details  This is used for byte sized values.
+ */
+void cputhex8 (uint8_t val)
+{
+    decode_hex(val);
+    cputs(&Conio.hexstr[2]);
+    return;
+}
+
+/**
+ * @brief    prints the hexadecimal value of the given value
+ * @details  This is used for word sized values.
+ */
+void cputhex16 (uint16_t val)
+{
+    decode_hex(val);
+    cputs(&Conio.hexstr[0]);
+    return;
+}
 
 /**
  * @}
