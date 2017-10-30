@@ -24,7 +24,7 @@
 
 #define Print(x)  ((void)Cconws(x))  /**< cast GEMDOS error away */
 
-#define ESC "\0x1B"  /**< helper */
+#define ESC "\033"  /**< helper */
 
 #define BIT(x)    (1 << (x))  /**< helper macro */
 
@@ -70,12 +70,12 @@ static void assert_init(void)
         Print(ESC "H");  /* home cursor */
         Print(ESC "v");  /* wrap at end of line */
         Print(ESC "f" ESC "q");  /* cursor off normal video */
-        Print(ESC "b\0x01" ESC "c\0x00"); /* color 1 foreground, color 0 background */
 
         Conio.x = 0;
         Conio.y = 0;
-        Conio.fg = 1;
-        Conio.bg = 0;
+
+        textcolor(15);
+        bgcolor(0);
 
         Conio.flags = INIT_FLAG;
     }
@@ -175,8 +175,8 @@ void gotoxy (uint8_t x, uint8_t y)
     Conio.x = x;
     Conio.y = y;
     Print( ESC "Y");
-    Cconout(32+Conio.x);
     Cconout(32+Conio.y);
+    Cconout(32+Conio.x);
 
     return;
 }
