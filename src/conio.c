@@ -74,10 +74,12 @@ static void assert_init(void)
         Conio.x = 0;
         Conio.y = 0;
 
+        Conio.flags = INIT_FLAG;
+
         textcolor(15);
         bgcolor(0);
+        revers(0);
 
-        Conio.flags = INIT_FLAG;
     }
     return;
 }

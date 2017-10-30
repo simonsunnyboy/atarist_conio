@@ -19,15 +19,15 @@ int main(int argc, char **argv)
     (void)argv;
 
     clrscr();
+revers(0);
+
 
     for(y = 0; y < 3; y++)
     {
         for(x = 0; x < 40; x++)
         {
             textcolor((col++ % 15)+1);
-
-            //textcolor(15);
-            //bgcolor(0);
+            bgcolor(0);
             cputcxy(x,y,'*');
         }
     }
@@ -40,8 +40,13 @@ int main(int argc, char **argv)
         cputhex8(col);
     }
 
-    gotoxy(0,4);
     textcolor(9);
+    revers(1);
+    cputsxy(20,13,"TEST");
+    revers(0);
+
+    gotoxy(0,4);
+    textcolor(14);
     chline(40);
 
     gotoxy(0,24);
@@ -51,6 +56,8 @@ int main(int argc, char **argv)
     bgcolor(0);
     cputs(">> press any key <<");
     revers(0);
+
+    Setcolor(9, 0x640);
 
     while(kbhit() == 0)
     {
