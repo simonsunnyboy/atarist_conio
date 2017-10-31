@@ -11,6 +11,26 @@
 #include "osbind.h"
 #include "conio.h"
 
+static void wait_for_key(void)
+{
+    gotoxy(0,24);
+
+    revers(1);
+    textcolor(15);
+    bgcolor(0);
+    cputs(">> press any key <<");
+    revers(0);
+
+
+    while(kbhit() == 0)
+    {
+        ;
+    }
+    (void)cgetc();
+
+    return;
+}
+
 int main(int argc, char **argv)
 {
     uint8_t col, x,y;
@@ -19,8 +39,6 @@ int main(int argc, char **argv)
     (void)argv;
 
     clrscr();
-revers(0);
-
 
     for(y = 0; y < 3; y++)
     {
@@ -49,21 +67,7 @@ revers(0);
     textcolor(14);
     chline(40);
 
-    gotoxy(0,24);
-
-    revers(1);
-    textcolor(15);
-    bgcolor(0);
-    cputs(">> press any key <<");
-    revers(0);
-
-    Setcolor(9, 0x640);
-
-    while(kbhit() == 0)
-    {
-        ;
-    }
-    (void)cgetc();
+    wait_for_key();
 
     return 0;
 }
