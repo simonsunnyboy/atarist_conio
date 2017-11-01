@@ -34,6 +34,7 @@ static void wait_for_key(void)
 int main(int argc, char **argv)
 {
     uint8_t col, x,y;
+    char *your_name;
 
     (void)argc;
     (void)argv;
@@ -66,6 +67,18 @@ int main(int argc, char **argv)
     gotoxy(0,4);
     textcolor(14);
     chline(40);
+
+    wait_for_key();
+
+    clrscr();
+    textcolor(15);
+    cputsxy(0,0, "Enter your name:");
+    cursor(1);
+    gotoxy(0,1);
+    your_name = cgets();
+    cursor(0);
+    cputsxy(0,2, "Your name is ");
+    cputs(your_name);
 
     wait_for_key();
 
