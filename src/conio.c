@@ -22,9 +22,12 @@
  * -----------------------------------------------------------------------
  */
 
-#define Print(x)  ((void)Cconws(x))  /**< cast GEMDOS error away */
+/**
+ * @brief   helper macro to output ESC sequence to console with 1 control character
+ * @details The output is done with Crawio() to avoid interpretation of control codes.
+ */
+#define ESC(x) (void)Crawio(0x001B);(void)Crawio(x)
 
-#define ESC "\033"  /**< helper */
 
 #define BIT(x)    (1 << (x))  /**< helper macro */
 
@@ -67,9 +70,9 @@ static void assert_init(void)
 {
     if((Conio.flags & INIT_FLAG) == 0)
     {
-        Print(ESC "H");  /* home cursor */
-        Print(ESC "v");  /* wrap at end of line */
-        Print(ESC "f" ESC "q");  /* cursor off normal video */
+        ESC('H');  /* home cursor */
+        ESC('v');  /* wrap at end of line */
+        ESC('f');  /* cursor off */
 
         Conio.x = 0;
         Conio.y = 0;
@@ -78,7 +81,8 @@ static void assert_init(void)
 
         textcolor(15);
         bgcolor(0);
-        revers(0);
+        revers(0);  /* revers off */
+        cursor(0);  /* cursor off */
 
     }
     return;
@@ -132,7 +136,7 @@ static void decode_hex(uint16_t n)
 void clrscr (void)
 {
     assert_init();
-    Print(ESC "E");  /* clear screen */
+    ESC('E');  /* clear screen */
     Conio.x = 0;
     Conio.y = 0;
     return;
@@ -176,9 +180,9 @@ void gotoxy (uint8_t x, uint8_t y)
 
     Conio.x = x;
     Conio.y = y;
-    Print( ESC "Y");
-    Cconout(32+Conio.y);
-    Cconout(32+Conio.x);
+    ESC('Y');
+    (void)Crawio(32+Conio.y);
+    (void)Crawio(32+Conio.x);
 
     return;
 }
@@ -266,11 +270,11 @@ char cgetc (void)
     /* check if cursor is to be shown: */
     if((Conio.flags & CURSOR_SHOWN) != 0)
     {
-        Print(ESC "e");
+        ESC('e');  /* show cursor */
     }
 
     c = (char)Cconin();
-    Print(ESC "f");  /* cursor off */
+    ESC('f');  /* cursor off again */
     return c;
 }
 
@@ -284,14 +288,14 @@ char * cgets(void)
     /* check if cursor is to be shown: */
     if((Conio.flags & CURSOR_SHOWN) != 0)
     {
-        Print(ESC "e");
+        ESC('e');  /* show cursor */
     }
 
     /* read string from keyboard */
     buffer[0] = sizeof(buffer) - 1;
     Cconrs(buffer);
 
-    Print(ESC "f");  /* cursor off */
+    ESC('f');  /* cursor off again */
     return &buffer[0];
 }
 
@@ -340,12 +344,12 @@ uint8_t revers (uint8_t onoff)
     if(onoff == 0)
     {
         Conio.flags &= ~REVERSE_ON;
-        Print(ESC "q");   /* reverse off */
+        ESC('q');   /* reverse off */
     }
     else
     {
         Conio.flags |= REVERSE_ON;
-        Print(ESC "p");   /* reverse on */
+        ESC('p');   /* reverse on */
     }
 
     return old_st;
@@ -360,8 +364,8 @@ uint8_t textcolor (uint8_t color)
     uint8_t old_col = Conio.fg;
     Conio.fg = (color & 0x0F);
 
-    Print( ESC "b");
-    Cconout(Conio.fg);
+    ESC('b');
+    (void)Crawio(Conio.fg);
 
     return old_col;
 }
@@ -375,8 +379,8 @@ uint8_t bgcolor (uint8_t color)
     uint8_t old_col = Conio.bg;
     Conio.bg = (color & 0x0F);
 
-    Print( ESC "c");
-    Cconout(Conio.bg);
+    ESC('c');
+    (void)Crawio(Conio.bg);
 
     return old_col;
 }
