@@ -296,7 +296,7 @@ char * cgets(void)
     Cconrs(buffer);
 
     ESC('f');  /* cursor off again */
-    return &buffer[0];
+    return &buffer[1];   /* first digit in string buffer contains maximum length */
 }
 
 /**
