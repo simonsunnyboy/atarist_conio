@@ -46,6 +46,7 @@ typedef struct
     uint8_t fg;      /**< foreground text color */
     uint8_t bg;      /**< background text color */
 	char hexstr[5];  /**< temporary buffer for decoding hexdigits */
+    uint16_t res;     /**< XBIOS 4 resolution code */
 } conio_vars_t;
 
 
@@ -80,6 +81,8 @@ static void assert_init ( void )
 		bgcolor ( 0 );
 		revers ( 0 ); /* revers off */
 		cursor ( 0 ); /* cursor off */
+
+        Conio.res = Getrez();
 	}
 
 	return;
@@ -355,10 +358,19 @@ uint8_t revers ( uint8_t onoff )
  */
 uint8_t textcolor ( uint8_t color )
 {
-	uint8_t old_col = Conio.fg;
+    uint8_t old_col;
+
+    assert_init();
+
+    old_col = Conio.fg;
 	Conio.fg = ( color & 0x0F );
-	ESC ( 'b' );
-	( void ) Crawio ( Conio.fg );
+
+    if(Conio.res != 2)
+    {
+        ESC ( 'b' );
+        ( void ) Crawio ( Conio.fg );
+    }
+
 	return old_col;
 }
 
@@ -368,10 +380,19 @@ uint8_t textcolor ( uint8_t color )
  */
 uint8_t bgcolor ( uint8_t color )
 {
-	uint8_t old_col = Conio.bg;
+    uint8_t old_col;
+
+    assert_init();
+
+    old_col = Conio.bg;
 	Conio.bg = ( color & 0x0F );
-	ESC ( 'c' );
-	( void ) Crawio ( Conio.bg );
+
+    if(Conio.res != 2)
+    {
+        ESC ( 'c' );
+        ( void ) Crawio ( Conio.bg );
+    }
+
 	return old_col;
 }
 

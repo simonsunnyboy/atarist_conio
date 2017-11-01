@@ -22,6 +22,8 @@ Screen operations use Atari standard VT52 screen control codes.
 ## Limitations
 
 - Text coloring is not supported for ST-HIGH
+- screensize() returns hardcoded dimensions
+- Horizontal and vertical lines look ugly.
 
 ## Use with your own Atari ST programs
 
