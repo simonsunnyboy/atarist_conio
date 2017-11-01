@@ -11,12 +11,20 @@ set(SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 # select Atari ST cross compiler and enable assembly language source files
 enable_language("ASM")
 
+# Create DRI style symbols
+option (USE_DRI_SYMBOLS "Create DRI-style symbols" OFF)
+
 set(CMAKE_C_COMPILER m68k-atari-mint-gcc)
 set(CMAKE_ASM_COMPILER m68k-atari-mint-as)
 set(CMAKE_AR m68k-atari-mint-ar)
 set(CMAKE_RANLIB m68k-atari-mint-ranlib)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m68000 -fomit-frame-pointer -Wextra -Wall -Wl,--traditional-format -mshort -nostdlib -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m68000 -fomit-frame-pointer -Wextra -Wall -mshort -nostdlib -std=c99")
 set(CMAKE_EXE_LINKER_FLAGS  "${SRC_DIR}/testapp/startup.S" )
+
+
+if (USE_DRI_SYMBOLS)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,--traditional-format")
+endif (USE_DRI_SYMBOLS)
 
 # GNU as configuration
 set(CMAKE_ASM_FLAGS_RELEASE "")
