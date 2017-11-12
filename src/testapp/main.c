@@ -32,7 +32,7 @@ static void wait_for_key ( void )
 
 int main ( int argc, char **argv )
 {
-	uint8_t col, x,y;
+    uint8_t col = 0,x,y;
 	char *your_name;
 	( void ) argc;
 	( void ) argv;
